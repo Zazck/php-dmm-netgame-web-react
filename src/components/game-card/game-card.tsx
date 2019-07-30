@@ -1,5 +1,4 @@
-// tslint:disable-next-line: import-name
-import React from 'react';
+import { default as React } from 'react';
 import { withStyles, WithStyles, Theme, createStyles, Card, CardMedia, CardContent, Typography, ButtonBase } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { LocationDescriptor } from 'history';
@@ -18,9 +17,11 @@ const styles = (theme: Theme) => createStyles({
   },
   content: {
     flex: '1 0 auto',
+    paddingBottom: '0 !important',
   },
   cover: {
-    width: 161,
+    width: 164,
+    height: 90,
   },
   link: {
     color: 'initial',

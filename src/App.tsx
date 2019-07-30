@@ -1,5 +1,4 @@
-// tslint:disable-next-line: import-name
-import React from 'react';
+import { default as React } from 'react';
 import {
   BrowserRouter as Router,
   Route,
@@ -55,6 +54,13 @@ const styles = (theme: Theme) => createStyles({
     flexGrow: 1,
     whiteSpace: 'nowrap',
   },
+  drawerTitle: {
+    display: 'flex',
+    minHeight: 64,
+    paddingLeft: 24,
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+  },
   active: {
     color: `${theme.palette.primary.main} !important`,
     background: `${theme.palette.primary.main}20 !important`,
@@ -70,6 +76,9 @@ const styles = (theme: Theme) => createStyles({
   },
   background: {
     backgroundColor: theme.palette.grey[50],
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100vh',
   },
 });
 
@@ -103,7 +112,8 @@ export class App extends React.Component<AppStore & AppProps, AppState> {
     {
       icon: PlayArrowIcon,
       title: '运行游戏',
-      to: '/play',
+      exact: true,
+      to: '/',
     },
     {
       icon: SettingsIcon,
@@ -146,6 +156,20 @@ export class App extends React.Component<AppStore & AppProps, AppState> {
             open={ this.state.opened }
             onClose={ () => this.toggleDrawer(false) }
           >
+            <div className={ classes.drawerTitle }>
+              <Typography
+                variant="h6"
+                color="inherit"
+              >
+                站点导航
+              </Typography>
+              <Typography
+                variant="caption"
+                color="textSecondary"
+              >
+                DMM网页游戏登录器
+              </Typography>
+            </div>
             <List className={ classes.drawer }>
               {this.navLinks.map(link => (
                 <NavLink
@@ -196,7 +220,7 @@ export class App extends React.Component<AppStore & AppProps, AppState> {
           <Route path="/auth" component={ Auth } />
           <Route path="/settings" component={ Settings } />
           <Route path="/about" component={ About } />
-          <AuthGuardRoute path="/game-list" component={ GameList } />
+          <Route path="/game-list" render={ () => <AuthGuardRoute component={ GameList } /> } />
           <Route path="/play" render={ () => <PlayGuardRoute component={ Play }></PlayGuardRoute> } />
           <Route path="/" exact render={ () => <PlayGuardRoute component={ Play }></PlayGuardRoute> } />
           <Snackbar

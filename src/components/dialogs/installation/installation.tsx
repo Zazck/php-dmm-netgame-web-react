@@ -1,5 +1,4 @@
-// tslint:disable-next-line: import-name
-import React from 'react';
+import { default as React } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, WithStyles, withStyles, CircularProgress, createStyles, Theme, FormGroup, Checkbox, FormControlLabel } from '@material-ui/core';
 import { IInstallPayload, IResponseData, IResponseGameFrame, IResponseError, OpCode, IRunPayload } from '../../../types/dmm';
 import { DMMService } from '../../../services/dmm.service';
@@ -46,7 +45,7 @@ class InstallationDialog extends React.Component<InstallationDialogProps, Instal
     }
   }
 
-  handleLoginPayloadCheckboxChange = (event: React.ChangeEvent, key: 'notification' | 'myapp') => {
+  handleCheckboxChange = (event: React.ChangeEvent, key: 'notification' | 'myapp') => {
     this.setState({
       ...this.state,
       [key]: JSON.parse((event.target as any).checked),
@@ -57,6 +56,10 @@ class InstallationDialog extends React.Component<InstallationDialogProps, Instal
     const { classes } = this.props;
     return <Dialog
       open={ this.props.open }
+      onExited={ () => this.setState({
+        ...this.state,
+        requesting: false,
+      }) }
       aria-labelledby="form-dialog-title"
     >
       <DialogTitle id="form-dialog-title">安装游戏到账户</DialogTitle>
@@ -65,7 +68,7 @@ class InstallationDialog extends React.Component<InstallationDialogProps, Instal
           <FormControlLabel
             control={
               <Checkbox
-                onChange={e => this.handleLoginPayloadCheckboxChange(e, 'notification')}
+                onChange={e => this.handleCheckboxChange(e, 'notification')}
                 checked={ this.state.notification }
                 color="primary"
                 name="notification"
@@ -76,7 +79,7 @@ class InstallationDialog extends React.Component<InstallationDialogProps, Instal
           <FormControlLabel
             control={
               <Checkbox
-                onChange={e => this.handleLoginPayloadCheckboxChange(e, 'myapp')}
+                onChange={e => this.handleCheckboxChange(e, 'myapp')}
                 checked={ this.state.myapp }
                 color="primary"
                 name="myapp"

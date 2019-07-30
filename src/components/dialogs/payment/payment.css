@@ -1,0 +1,17 @@
+.payment-detail table {
+  margin: 0 0 0 auto;
+  border-spacing: 16px 2px;
+}
+.payment-detail table td:last-child {
+  text-align: right;
+}
+
+.item-info {
+  overflow: hidden;
+}
+
+.item-info > img {
+  float: left;
+  margin-right: 24px;
+  margin-bottom: 24px;
+}

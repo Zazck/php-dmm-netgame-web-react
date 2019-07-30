@@ -1,5 +1,4 @@
-// tslint:disable-next-line: import-name
-import React from 'react';
+import { default as React } from 'react';
 import { Dialog, DialogTitle, DialogActions, Button } from '@material-ui/core';
 
 interface UpdateSTDialogProps {

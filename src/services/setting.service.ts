@@ -33,7 +33,7 @@ for (const k of settingNames) {
       return JSON.parse(localStorage.getItem(k) || 'null');
     },
     set(v) {
-      if (v === null) {
+      if (v === undefined) {
         localStorage.removeItem(k);
       } else {
         localStorage.setItem(k, JSON.stringify(v));

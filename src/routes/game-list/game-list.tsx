@@ -1,5 +1,4 @@
-// tslint:disable-next-line: import-name
-import React from 'react';
+import { default as React } from 'react';
 import { AppStore, mapStateToProps } from '../../store';
 import { updateTitle } from '../../store/title.store';
 import { updateGeneralGameList, updateAdultGameList } from '../../store/game-list.store';
@@ -63,14 +62,12 @@ class GameList extends React.Component<AppStore & GameListProps, GameListState> 
     };
   }
 
-  public makeQueryString(name: string) {
-    SettingService.game = name;
-    SettingService.gameCategory = this.state.gameCategory ? 'adult' : 'general';
+  public makeQueryString(name: string, category: 'general' | 'adult') {
     const search = new URLSearchParams();
     search.append('name', name);
-    search.append('category', SettingService.gameCategory as string);
+    search.append('category', category);
     return {
-      pathname: '/play',
+      pathname: '/',
       search: `?${search.toString()}`,
     };
   }
@@ -99,7 +96,7 @@ class GameList extends React.Component<AppStore & GameListProps, GameListState> 
                   title={ info.title }
                   image={ `https://img-freegames.dmm.com/app/${info.thumb}/details/pic_thmb.jpg` }
                   description={ info.comment }
-                  to={ this.makeQueryString(info.name) }
+                  to={ this.makeQueryString(info.name, 'general') }
                   key={ info.name }
                 ></GameCard>;
               })
@@ -114,7 +111,7 @@ class GameList extends React.Component<AppStore & GameListProps, GameListState> 
                   title={ info.title }
                   image={ `https://img-freegames.dmm.com/app/${info.thumb}/details/pic_thmb.jpg` }
                   description={ info.comment }
-                  to={ this.makeQueryString(info.name) }
+                  to={ this.makeQueryString(info.name, 'adult') }
                   key={ info.name }
                 ></GameCard>;
               })

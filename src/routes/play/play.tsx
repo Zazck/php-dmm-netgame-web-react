@@ -1,15 +1,16 @@
-// tslint:disable-next-line: import-name
-import React from 'react';
+import { default as React } from 'react';
 import { AppStore, mapStateToProps } from '../../store';
 import { updateTitle } from '../../store/title.store';
 import { connect } from 'react-redux';
 import { WithStyles, Theme, createStyles, withStyles } from '@material-ui/core';
 import { default as InstallationDialog } from '../../components/dialogs/installation/installation';
-import { IResponseError, IResponseData, OpCode, IGadgetInfo, IResponseGameFrame, IRPCPayloadRaw } from '../../types/dmm';
+import { IResponseError, IResponseData, OpCode, IGadgetInfo, IResponseGameFrame, IRPCPayloadRaw, IRPCPayload, IRPCRequestPaymentPayload, IResponsePaymentAction, IResponsePaymentDetail, IPaymentPayload } from '../../types/dmm';
 import { SettingService } from '../../services/setting.service';
 import { DMMService } from '../../services/dmm.service';
 import { Redirect } from 'react-router';
 import { default as UpdateSTDialog } from '../../components/dialogs/update-st/update-st';
+import { default as RegistrationDialog } from '../../components/dialogs/registration/registration';
+import { default as PaymentDialog } from '../../components/dialogs/payment/payment';
 
 const styles = (theme: Theme) => createStyles({
   pure: {
@@ -53,9 +54,16 @@ interface PlayState {
   updateST: boolean;
   regist: boolean;
   payment: boolean;
+
+  // payment
+  paymentDetail: IResponsePaymentDetail;
+  paymentPayload: IPaymentPayload;
 }
 
 class Play extends React.Component<AppStore & PlayProps, PlayState> {
+  private readonly newTransactionHost = 'pc-play.games.dmm.com';
+  // private readonly oldTransactionHost = 'www.dmm.com';
+
   componentWillMount = () => {
     const title = '运行游戏';
     this.props.updateTitle(title);
@@ -88,6 +96,8 @@ class Play extends React.Component<AppStore & PlayProps, PlayState> {
       updateST: false,
       regist: false,
       payment: false,
+      paymentDetail: {} as IResponsePaymentDetail,
+      paymentPayload: {} as IPaymentPayload,
     };
     this.run();
   }
@@ -113,6 +123,67 @@ class Play extends React.Component<AppStore & PlayProps, PlayState> {
   public get frame() {
     const frame: HTMLIFrameElement = window.document.getElementById('game_frame') as HTMLIFrameElement;
     return frame;
+  }
+
+  public requestPayment = async (payload: IRPCPayload<[IRPCRequestPaymentPayload]>) => {
+    const transactionUrl = new URL(payload.data[0].transactionUrl);
+    const paymentPayload: IPaymentPayload = {
+      app_name: this.state.name,
+      app_base: this.state.category,
+      app_id: this.state.gadgetInfo.app_id,
+      version: transactionUrl.host === this.newTransactionHost ? 'new' : 'old',
+      payment_id: payload.data[0].paymentId,
+    };
+    const result = await DMMService.requestPayment(paymentPayload);
+    if (result.code !== OpCode.OK) {
+      this.rpcMessage('dmm.requestPaymentCallback', 500, result.data);
+      return;
+    }
+
+    this.setState({
+      paymentPayload,
+      payment: true,
+      paymentDetail: result.data,
+    });
+  }
+
+  public handleMessage = (e: MessageEvent) => {
+    if (e.origin === window.location.origin) {
+      return;
+    }
+    const raw = JSON.parse(e.data) as IRPCPayloadRaw;
+    const payload: IRPCPayload = {
+      event: raw.s,
+      data: raw.a,
+    };
+    switch (payload.event) {
+      case 'resize_iframe':
+        this.setState({
+          ...this.state,
+          iframeHeight: payload.data[0],
+        });
+        break;
+      case '__ack':
+        this.setState({
+          ...this.state,
+          loading: false,
+        });
+        break;
+      case 'dmm.requestPayment':
+        this.requestPayment(payload as IRPCPayload<[IRPCRequestPaymentPayload]>);
+        break;
+      default:
+        console.log(payload);
+    }
+  }
+
+  componentDidMount = () => {
+    window.addEventListener('message', this.handleMessage);
+  }
+
+  componentWillUnmount = () => {
+    window.removeEventListener('message', this.handleMessage);
+    clearTimeout(this.state.updateStTimer);
   }
 
   public rpcMessage<T extends any[]>(event: string, ...data: T) {
@@ -156,17 +227,17 @@ class Play extends React.Component<AppStore & PlayProps, PlayState> {
   runGame = (response: IResponseData<IResponseGameFrame>) => {
     const gadgetInfo = (response).data.gadget_info;
     gadgetInfo.st = decodeURIComponent(gadgetInfo.st);
+    const osapi = this.handleOsapi(gadgetInfo.url);
     if (SettingService.autoRedirect) {
       SettingService.game = undefined;
       SettingService.gameCategory = undefined;
-      window.location.href = this.state.osapi;
+      window.location.assign(osapi);
       return;
     }
     SettingService.game = this.state.name;
     SettingService.gameCategory = this.state.category;
     clearInterval(this.state.updateStTimer);
     const updateStTimer = setInterval(this.updateST, 60 * 30 * 1000) as unknown as number;
-    const osapi = this.handleOsapi(gadgetInfo.url);
     this.setState({
       ...this.state,
       gadgetInfo,
@@ -255,6 +326,7 @@ class Play extends React.Component<AppStore & PlayProps, PlayState> {
                 } : ''` : ''
               }`
             }
+            title="游戏框架"
             src={ this.state.osapi }
             width={ this.state.iframeWidth }
             height={ this.state.iframeHeight }
@@ -275,6 +347,7 @@ class Play extends React.Component<AppStore & PlayProps, PlayState> {
               ...this.state,
               back: true,
             });
+            return;
           }
           this.handleResponse(response);
         } }
@@ -291,6 +364,40 @@ class Play extends React.Component<AppStore & PlayProps, PlayState> {
           }
         } }
       ></UpdateSTDialog>
+      <RegistrationDialog
+        open={ this.state.regist }
+        appBase={ this.state.category }
+        onClose={ (response) => {
+          // whatever result is success or not, we are returning to
+          // game list and let user enter the game and install again
+          this.setState({
+            ...this.state,
+            back: true,
+          });
+          return;
+        } }
+      ></RegistrationDialog>
+      <PaymentDialog
+        open={ this.state.payment }
+        detail={ this.state.paymentDetail }
+        payload={ this.state.paymentPayload }
+        onClose={ async (result: IResponseError | IResponseData<IResponsePaymentAction>) => {
+          if (result.code !== OpCode.OK) {
+            this.rpcMessage('dmm.requestPaymentCallback', 500, result.data);
+            return;
+          }
+          this.rpcMessage('dmm.requestPaymentCallback', 200, {
+            amount: result.data.amount,
+            response_code: result.data.response_code,
+            payment_id: result.data.payment_id,
+          });
+          this.setState({
+            ...this.state,
+            payment: false,
+          });
+          return;
+        } }
+      ></PaymentDialog>
     </div>;
   }
 }

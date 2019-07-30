@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { SettingService } from './setting.service';
-import { OpCode, IResponseMessage, ILoginPayload, IResponseError, IResponseData, IRunPayload, IResponseGameFrame, IRequestPaymentPayload, IRegistPayload, IResponsePaymentDetail, IResponsePaymentAction, IUpdateSTPayload, IResponseST, IInstallPayload } from '../types/dmm';
+import { OpCode, IResponseMessage, ILoginPayload, IResponseError, IResponseData, IRunPayload, IResponseGameFrame, IPaymentPayload, IRegistPayload, IResponsePaymentDetail, IResponsePaymentAction, IUpdateSTPayload, IResponseST, IInstallPayload } from '../types/dmm';
 
 export class DmmService {
   private responseText = {
@@ -192,7 +192,7 @@ export class DmmService {
     }) as Promise<IResponseData<null> | IResponseError>;
   }
 
-  public async requestPayment(payload: IRequestPaymentPayload): Promise<IResponseData<IResponsePaymentDetail> | IResponseError> {
+  public async requestPayment(payload: IPaymentPayload): Promise<IResponseData<IResponsePaymentDetail> | IResponseError> {
     if (!SettingService.cookies) {
       return {
         code: OpCode.CLIENT_NETWORK_ERROR,
@@ -208,7 +208,7 @@ export class DmmService {
     }) as Promise<IResponseData<IResponsePaymentDetail> | IResponseError>;
   }
 
-  public async paymentCommit(payload: IRequestPaymentPayload): Promise<IResponseData<IResponsePaymentAction> | IResponseError> {
+  public async paymentCommit(payload: IPaymentPayload): Promise<IResponseData<IResponsePaymentAction> | IResponseError> {
     if (!SettingService.cookies) {
       return {
         code: OpCode.CLIENT_NETWORK_ERROR,
@@ -224,7 +224,7 @@ export class DmmService {
     }) as Promise<IResponseData<IResponsePaymentAction> | IResponseError>;
   }
 
-  public async paymentCancel(payload: IRequestPaymentPayload): Promise<IResponseData<IResponsePaymentAction> | IResponseError> {
+  public async paymentCancel(payload: IPaymentPayload): Promise<IResponseData<IResponsePaymentAction> | IResponseError> {
     if (!SettingService.cookies) {
       return {
         code: OpCode.CLIENT_NETWORK_ERROR,

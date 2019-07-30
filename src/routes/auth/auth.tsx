@@ -1,5 +1,4 @@
-// tslint:disable-next-line: import-name
-import React from 'react';
+import { default as React } from 'react';
 import { SettingService } from '../../services/setting.service';
 import { AppStore, mapStateToProps } from '../../store';
 import { updateTitle } from '../../store/title.store';
@@ -82,7 +81,7 @@ class Auth extends React.Component<AppStore & AuthProps, AuthState> {
       [key]: (event.target as any).value,
     }});
   }
-  handleLoginPayloadCheckboxChange = (event: React.ChangeEvent, key: keyof ILoginPayload) => {
+  handleCheckboxChange = (event: React.ChangeEvent, key: keyof ILoginPayload) => {
     this.setState({ ...this.state, loginPayload: {
       ...this.state.loginPayload,
       [key]: JSON.parse((event.target as any).checked),
@@ -158,7 +157,7 @@ class Auth extends React.Component<AppStore & AuthProps, AuthState> {
               <FormControlLabel
                 control={
                   <Checkbox
-                    onChange={e => this.handleLoginPayloadCheckboxChange(e, 'saveLoginID')}
+                    onChange={e => this.handleCheckboxChange(e, 'saveLoginID')}
                     checked={ this.state.loginPayload.saveLoginID }
                     color="primary"
                   />
@@ -168,7 +167,7 @@ class Auth extends React.Component<AppStore & AuthProps, AuthState> {
               <FormControlLabel
                 control={
                   <Checkbox
-                    onChange={e => this.handleLoginPayloadCheckboxChange(e, 'savePassword')}
+                    onChange={e => this.handleCheckboxChange(e, 'savePassword')}
                     checked={ this.state.loginPayload.savePassword }
                     color="primary"
                   />
@@ -178,7 +177,7 @@ class Auth extends React.Component<AppStore & AuthProps, AuthState> {
               <FormControlLabel
                 control={
                   <Checkbox
-                    onChange={e => this.handleLoginPayloadCheckboxChange(e, 'autoLogin')}
+                    onChange={e => this.handleCheckboxChange(e, 'autoLogin')}
                     checked={ this.state.loginPayload.autoLogin }
                     color="primary"
                   />
