@@ -151,7 +151,7 @@ export class App extends React.Component<AppStore & AppProps, AppState> {
     const { classes } = this.props;
     return (
       <div className={ `App ${classes.background}` }>
-        <Router>
+        <Router basename={'/'}>
           <Drawer
             open={ this.state.opened }
             onClose={ () => this.toggleDrawer(false) }
