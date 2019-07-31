@@ -316,7 +316,7 @@ class Play extends React.Component<AppStore & PlayProps, PlayState> {
       <div
         className={ `game-container ${this.state.loading ? 'loading' : ''}` }
       >
-        { this.state.osapi && (
+        { this.state.osapi !== '' && (
           <iframe
             id="game_frame"
             className={

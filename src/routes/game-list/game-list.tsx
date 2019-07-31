@@ -76,7 +76,7 @@ class GameList extends React.Component<AppStore & GameListProps, GameListState> 
     const { classes, gameListState } = this.props;
     return <div>
       {
-        this.state.category && <Tabs
+        this.state.category === 1 && <Tabs
           value={this.state.gameCategory}
           onChange={ (_, value) => this.setState({ ...this.state, gameCategory: value }) }
           indicatorColor="primary"
@@ -103,7 +103,7 @@ class GameList extends React.Component<AppStore & GameListProps, GameListState> 
             }
           </div>
         </div>
-        {this.state.category && <div hidden={!this.state.gameCategory ? true : false}>
+        {this.state.category === 1 && <div hidden={!this.state.gameCategory ? true : false}>
           <div className={ classes.cardList } >
             {
               gameListState.adult.map((info) => {
